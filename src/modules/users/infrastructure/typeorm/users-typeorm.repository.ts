@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import type { UsersRepositoryPort } from '../../application/ports/users-repository.port';
+import type {
+  AuthUserRecord,
+  UsersRepositoryPort,
+} from '../../application/ports/users-repository.port';
 import { UserEntity } from './users.entities';
 
 @Injectable()
@@ -19,6 +22,31 @@ export class UsersTypeOrmRepository implements UsersRepositoryPort {
 
   findById(id: number) {
     return this.dataSource.getRepository(UserEntity).findOneBy({ id });
+  }
+
+  async findByEmailForAuth(email: string): Promise<AuthUserRecord | null> {
+    const user = await this.dataSource
+      .getRepository(UserEntity)
+      .createQueryBuilder('user')
+      .addSelect('user.passwordHash')
+      .where('user.email = :email', { email })
+      .getOne();
+
+    if (!user) {
+      return null;
+    }
+
+    return {
+      id: user.id,
+      email: user.email,
+      passwordHash: user.passwordHash ?? null,
+    };
+  }
+
+  emailExists(email: string): Promise<boolean> {
+    return this.dataSource
+      .getRepository(UserEntity)
+      .exists({ where: { email } });
   }
 
   async update(id: number, payload: Record<string, unknown>) {

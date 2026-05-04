@@ -5,7 +5,8 @@ import type { OrdersRepositoryPort } from '../ports/orders-repository.port';
 @Injectable()
 export class CreateOrderUseCase {
   constructor(
-    @Inject(ORDERS_REPOSITORY) private readonly repository: OrdersRepositoryPort,
+    @Inject(ORDERS_REPOSITORY)
+    private readonly repository: OrdersRepositoryPort,
   ) {}
 
   execute(payload: Record<string, unknown>) {
@@ -16,7 +17,8 @@ export class CreateOrderUseCase {
 @Injectable()
 export class GetAllOrdersUseCase {
   constructor(
-    @Inject(ORDERS_REPOSITORY) private readonly repository: OrdersRepositoryPort,
+    @Inject(ORDERS_REPOSITORY)
+    private readonly repository: OrdersRepositoryPort,
   ) {}
 
   execute() {
@@ -27,7 +29,8 @@ export class GetAllOrdersUseCase {
 @Injectable()
 export class GetOrderByIdUseCase {
   constructor(
-    @Inject(ORDERS_REPOSITORY) private readonly repository: OrdersRepositoryPort,
+    @Inject(ORDERS_REPOSITORY)
+    private readonly repository: OrdersRepositoryPort,
   ) {}
 
   async execute(id: number) {
@@ -43,7 +46,8 @@ export class GetOrderByIdUseCase {
 @Injectable()
 export class UpdateOrderUseCase {
   constructor(
-    @Inject(ORDERS_REPOSITORY) private readonly repository: OrdersRepositoryPort,
+    @Inject(ORDERS_REPOSITORY)
+    private readonly repository: OrdersRepositoryPort,
   ) {}
 
   async execute(id: number, payload: Record<string, unknown>) {
@@ -59,7 +63,8 @@ export class UpdateOrderUseCase {
 @Injectable()
 export class DeleteOrderUseCase {
   constructor(
-    @Inject(ORDERS_REPOSITORY) private readonly repository: OrdersRepositoryPort,
+    @Inject(ORDERS_REPOSITORY)
+    private readonly repository: OrdersRepositoryPort,
   ) {}
 
   async execute(id: number) {

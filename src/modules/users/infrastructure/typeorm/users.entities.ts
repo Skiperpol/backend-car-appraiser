@@ -19,6 +19,9 @@ export class UserEntity {
 
   @Column({ length: 255, nullable: true })
   type?: string;
+
+  @Column({ type: 'varchar', length: 255, nullable: true, select: false })
+  passwordHash?: string | null;
 }
 
 export const usersEntities = [UserEntity];
