@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Header,
   HttpCode,
   Param,
   ParseIntPipe,
@@ -10,10 +11,12 @@ import {
   Post,
   Put,
   Query,
+  StreamableFile,
 } from '@nestjs/common';
 import {
   CreateReportUseCase,
   DeleteReportUseCase,
+  GenerateReportPdfUseCase,
   GetAllReportsUseCase,
   GetReportAggregateUseCase,
   GetReportByIdUseCase,
@@ -27,6 +30,7 @@ import type {
   ReportAggregatePayload,
   ReportsPushChangesPayload,
 } from '../../domain/reports-sync';
+import { GenerateReportPdfDto } from '../dto/generate-report-pdf.dto';
 
 @Controller('api/reports')
 export class ReportsController {
@@ -41,6 +45,7 @@ export class ReportsController {
     private readonly upsertReportAggregateUseCase: UpsertReportAggregateUseCase,
     private readonly pullReportsChangesUseCase: PullReportsChangesUseCase,
     private readonly pushReportsChangesUseCase: PushReportsChangesUseCase,
+    private readonly generateReportPdfUseCase: GenerateReportPdfUseCase,
   ) {}
 
   @Post()
@@ -68,6 +73,18 @@ export class ReportsController {
   @HttpCode(204)
   async pushChanges(@Body() body: ReportsPushChangesPayload) {
     await this.pushReportsChangesUseCase.execute(body);
+  }
+
+  @Post('pdf')
+  @Header('Content-Type', 'application/pdf')
+  async generatePdf(@Body() body: GenerateReportPdfDto) {
+    const buffer = await this.generateReportPdfUseCase.execute(body);
+    const safeFileName = body.reportNumber.replace(/[^\w.-]+/g, '_');
+
+    return new StreamableFile(buffer, {
+      type: 'application/pdf',
+      disposition: `attachment; filename="raport-${safeFileName}.pdf"`,
+    });
   }
 
   @Get(':id')

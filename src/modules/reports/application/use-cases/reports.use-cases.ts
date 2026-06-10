@@ -5,6 +5,8 @@ import type {
   ReportAggregatePayload,
   ReportsPushChangesPayload,
 } from '../../domain/reports-sync';
+import { ReportPdfService } from '../../infrastructure/pdf/report-pdf.service';
+import type { GenerateReportPdfDto } from '../../presentation/dto/generate-report-pdf.dto';
 
 @Injectable()
 export class CreateReportUseCase {
@@ -141,5 +143,14 @@ export class PushReportsChangesUseCase {
 
   execute(payload: ReportsPushChangesPayload) {
     return this.repository.pushChanges(payload);
+  }
+}
+
+@Injectable()
+export class GenerateReportPdfUseCase {
+  constructor(private readonly reportPdfService: ReportPdfService) {}
+
+  execute(payload: GenerateReportPdfDto) {
+    return this.reportPdfService.generate(payload);
   }
 }

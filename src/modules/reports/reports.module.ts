@@ -3,6 +3,7 @@ import { REPORTS_REPOSITORY } from './application/ports/reports-repository.port'
 import {
   CreateReportUseCase,
   DeleteReportUseCase,
+  GenerateReportPdfUseCase,
   GetAllReportsUseCase,
   GetReportAggregateUseCase,
   GetReportByIdUseCase,
@@ -12,6 +13,7 @@ import {
   UpsertReportAggregateUseCase,
   UpdateReportUseCase,
 } from './application/use-cases/reports.use-cases';
+import { ReportPdfService } from './infrastructure/pdf/report-pdf.service';
 import { ReportsTypeOrmRepository } from './infrastructure/typeorm/reports-typeorm.repository';
 import { ReportsController } from './presentation/controllers/reports.controller';
 
@@ -28,6 +30,8 @@ import { ReportsController } from './presentation/controllers/reports.controller
     UpsertReportAggregateUseCase,
     PullReportsChangesUseCase,
     PushReportsChangesUseCase,
+    GenerateReportPdfUseCase,
+    ReportPdfService,
     {
       provide: REPORTS_REPOSITORY,
       useClass: ReportsTypeOrmRepository,
