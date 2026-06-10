@@ -10,12 +10,15 @@ import {
   GetReportFieldsConfigUseCase,
   PullReportsChangesUseCase,
   PushReportsChangesUseCase,
+  SendReportPdfEmailUseCase,
   UpsertReportAggregateUseCase,
   UpdateReportUseCase,
 } from './application/use-cases/reports.use-cases';
+import { ReportMailService } from './infrastructure/mail/report-mail.service';
 import { ReportPdfService } from './infrastructure/pdf/report-pdf.service';
 import { ReportsTypeOrmRepository } from './infrastructure/typeorm/reports-typeorm.repository';
 import { ReportsController } from './presentation/controllers/reports.controller';
+import { MailService } from '../../shared/infrastructure/mail/mail.service';
 
 @Module({
   controllers: [ReportsController],
@@ -31,7 +34,10 @@ import { ReportsController } from './presentation/controllers/reports.controller
     PullReportsChangesUseCase,
     PushReportsChangesUseCase,
     GenerateReportPdfUseCase,
+    SendReportPdfEmailUseCase,
     ReportPdfService,
+    ReportMailService,
+    MailService,
     {
       provide: REPORTS_REPOSITORY,
       useClass: ReportsTypeOrmRepository,

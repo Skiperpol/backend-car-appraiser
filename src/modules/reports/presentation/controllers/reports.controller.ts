@@ -23,6 +23,7 @@ import {
   GetReportFieldsConfigUseCase,
   PullReportsChangesUseCase,
   PushReportsChangesUseCase,
+  SendReportPdfEmailUseCase,
   UpsertReportAggregateUseCase,
   UpdateReportUseCase,
 } from '../../application/use-cases/reports.use-cases';
@@ -31,6 +32,7 @@ import type {
   ReportsPushChangesPayload,
 } from '../../domain/reports-sync';
 import { GenerateReportPdfDto } from '../dto/generate-report-pdf.dto';
+import { SendReportPdfEmailDto } from '../dto/send-report-pdf-email.dto';
 
 @Controller('api/reports')
 export class ReportsController {
@@ -46,6 +48,7 @@ export class ReportsController {
     private readonly pullReportsChangesUseCase: PullReportsChangesUseCase,
     private readonly pushReportsChangesUseCase: PushReportsChangesUseCase,
     private readonly generateReportPdfUseCase: GenerateReportPdfUseCase,
+    private readonly sendReportPdfEmailUseCase: SendReportPdfEmailUseCase,
   ) {}
 
   @Post()
@@ -85,6 +88,12 @@ export class ReportsController {
       type: 'application/pdf',
       disposition: `attachment; filename="raport-${safeFileName}.pdf"`,
     });
+  }
+
+  @Post('pdf/email')
+  @HttpCode(204)
+  async sendPdfByEmail(@Body() body: SendReportPdfEmailDto) {
+    await this.sendReportPdfEmailUseCase.execute(body);
   }
 
   @Get(':id')
