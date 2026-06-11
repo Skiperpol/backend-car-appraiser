@@ -62,7 +62,7 @@ export class ReportAttachmentEntity {
   @Column({ name: 'report_id', nullable: true })
   reportId?: number;
 
-  @Column({ length: 255, nullable: true })
+  @Column({ type: 'text', nullable: true })
   url?: string;
 
   @Column({ length: 255, nullable: true })
