@@ -119,8 +119,8 @@ export class UpsertReportAggregateUseCase {
     private readonly repository: ReportsRepositoryPort,
   ) {}
 
-  execute(id: number, payload: ReportAggregatePayload) {
-    return this.repository.upsertAggregateByReportId(id, payload);
+  execute(id: number, payload: ReportAggregatePayload, authUserId?: number) {
+    return this.repository.upsertAggregateByReportId(id, payload, authUserId);
   }
 }
 

@@ -129,7 +129,11 @@ export class ReportsTypeOrmRepository implements ReportsRepositoryPort {
       );
   }
 
-  async upsertAggregateByReportId(id: number, payload: ReportAggregatePayload) {
+  async upsertAggregateByReportId(
+    id: number,
+    payload: ReportAggregatePayload,
+    authUserId?: number,
+  ) {
     return this.dataSource.transaction(async (manager) => {
       const reportRepo = manager.getRepository(ReportEntity);
       const basicDataRepo = manager.getRepository(BasicDataEntity);
@@ -142,6 +146,7 @@ export class ReportsTypeOrmRepository implements ReportsRepositoryPort {
         reportRepo.merge(existingReport ?? reportRepo.create({ id }), {
           ...payload.report,
           id,
+          userId: existingReport?.userId ?? authUserId,
           updatedAt: now,
           createdAt: existingReport?.createdAt ?? now,
         }),

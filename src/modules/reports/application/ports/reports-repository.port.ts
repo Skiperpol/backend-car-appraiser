@@ -15,6 +15,7 @@ export interface ReportsRepositoryPort {
   upsertAggregateByReportId(
     id: number,
     payload: ReportAggregatePayload,
+    authUserId?: number,
   ): Promise<unknown>;
   pullChanges(lastPulledAt?: number): Promise<ReportsPullChangesResponse>;
   pushChanges(payload: ReportsPushChangesPayload): Promise<void>;

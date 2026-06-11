@@ -13,6 +13,8 @@ import {
   Query,
   StreamableFile,
 } from '@nestjs/common';
+import { CurrentUser } from '../../../auth/presentation/decorators/current-user.decorator';
+import type { JwtValidatedUser } from '../../../auth/infrastructure/jwt-access.strategy';
 import {
   CreateReportUseCase,
   DeleteReportUseCase,
@@ -52,8 +54,14 @@ export class ReportsController {
   ) {}
 
   @Post()
-  create(@Body() body: Record<string, unknown>) {
-    return this.createReportUseCase.execute(body);
+  create(
+    @Body() body: Record<string, unknown>,
+    @CurrentUser() user: JwtValidatedUser,
+  ) {
+    return this.createReportUseCase.execute({
+      ...body,
+      userId: user.userId,
+    });
   }
 
   @Get()
@@ -110,8 +118,9 @@ export class ReportsController {
   upsertAggregate(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: ReportAggregatePayload,
+    @CurrentUser() user: JwtValidatedUser,
   ) {
-    return this.upsertReportAggregateUseCase.execute(id, body);
+    return this.upsertReportAggregateUseCase.execute(id, body, user.userId);
   }
 
   @Patch(':id')
