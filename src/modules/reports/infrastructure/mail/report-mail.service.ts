@@ -18,8 +18,8 @@ export class ReportMailService {
       to: payload.recipientEmail,
       subject: `Raport - ${payload.reportNumber}`,
       text: [
-        `W zalaczeniu przeslano raport ${payload.reportNumber}.`,
-        'Plik PDF zawiera szczegoly raportu oraz zdjecia z komentarzami.',
+        `W załączeniu przesłano raport ${payload.reportNumber}.`,
+        'Plik PDF zawiera szczegóły raportu oraz zdjęcia z komentarzami.',
       ].join('\n\n'),
       attachments: [
         {

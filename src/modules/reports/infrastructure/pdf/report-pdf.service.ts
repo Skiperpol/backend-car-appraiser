@@ -86,7 +86,7 @@ export class ReportPdfService {
       doc
         .font('bold')
         .fontSize(18)
-        .text(`Zdjecie ${index + 1}`, { align: 'left' });
+        .text(`Zdjęcie ${index + 1}`, { align: 'left' });
       doc.moveDown(0.75);
 
       if (photo.imageBase64) {
@@ -101,7 +101,7 @@ export class ReportPdfService {
             .font('regular')
             .fontSize(12)
             .fillColor('#666666')
-            .text('Nie udalo sie wczytac zdjecia.');
+            .text('Nie udało się wczytać zdjęcia.');
           doc.fillColor('#000000');
         }
       } else {
@@ -109,7 +109,7 @@ export class ReportPdfService {
           .font('regular')
           .fontSize(12)
           .fillColor('#666666')
-          .text('Brak zdjecia.');
+          .text('Brak zdjęcia.');
         doc.fillColor('#000000');
       }
 

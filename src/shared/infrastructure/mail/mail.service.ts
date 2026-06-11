@@ -62,7 +62,7 @@ export class MailService {
       });
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : 'Nie udalo sie wyslac wiadomosci.';
+        error instanceof Error ? error.message : 'Nie udało się wysłać wiadomości.';
       throw new InternalServerErrorException(message);
     }
   }
