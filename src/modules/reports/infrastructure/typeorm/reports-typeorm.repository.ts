@@ -53,8 +53,15 @@ export class ReportsTypeOrmRepository implements ReportsRepositoryPort {
   }
 
   async delete(id: number) {
-    const result = await this.dataSource.getRepository(ReportEntity).delete(id);
-    return (result.affected ?? 0) > 0;
+    return this.dataSource.transaction(async (manager) => {
+      await manager.getRepository(BasicDataEntity).delete({ reportId: id });
+      await manager.getRepository(ReportAttachmentEntity).delete({ reportId: id });
+      await manager
+        .getRepository(ReportDynamicValueEntity)
+        .delete({ reportId: id });
+      const result = await manager.getRepository(ReportEntity).delete(id);
+      return (result.affected ?? 0) > 0;
+    });
   }
 
   getFieldsConfig() {
