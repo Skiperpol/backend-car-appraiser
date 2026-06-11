@@ -44,6 +44,9 @@ export class ReportEntity {
   @Column({ name: 'order_id', nullable: true })
   orderId?: number;
 
+  @Column({ name: 'order_number', length: 255, nullable: true })
+  orderNumber?: string;
+
   @Column({ name: 'created_at', type: 'timestamp', nullable: true })
   createdAt?: Date;
 
@@ -64,6 +67,15 @@ export class ReportAttachmentEntity {
 
   @Column({ length: 255, nullable: true })
   comment?: string;
+
+  @Column({ length: 255, nullable: true })
+  name?: string;
+
+  @Column({ name: 'created_at', type: 'timestamp', nullable: true })
+  createdAt?: Date;
+
+  @Column({ name: 'updated_at', type: 'timestamp', nullable: true })
+  updatedAt?: Date;
 }
 
 @Entity({ name: 'report_fields_config' })
@@ -79,6 +91,9 @@ export class ReportFieldsConfigEntity {
 
   @Column({ name: 'example_value', length: 255, nullable: true })
   exampleValue?: string;
+
+  @Column({ length: 255, nullable: true, unique: true })
+  slug?: string;
 
   @Column({ name: 'created_at', type: 'timestamp', nullable: true })
   createdAt?: Date;

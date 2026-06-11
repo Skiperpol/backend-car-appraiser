@@ -16,6 +16,7 @@ import {
 } from './application/use-cases/reports.use-cases';
 import { ReportMailService } from './infrastructure/mail/report-mail.service';
 import { ReportPdfService } from './infrastructure/pdf/report-pdf.service';
+import { ReportFieldsConfigSeeder } from './infrastructure/typeorm/report-fields-config.seeder';
 import { ReportsTypeOrmRepository } from './infrastructure/typeorm/reports-typeorm.repository';
 import { ReportsController } from './presentation/controllers/reports.controller';
 import { MailService } from '../../shared/infrastructure/mail/mail.service';
@@ -38,6 +39,7 @@ import { MailService } from '../../shared/infrastructure/mail/mail.service';
     ReportPdfService,
     ReportMailService,
     MailService,
+    ReportFieldsConfigSeeder,
     {
       provide: REPORTS_REPOSITORY,
       useClass: ReportsTypeOrmRepository,

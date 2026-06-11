@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource } from 'typeorm';
+import { DataSource, EntityManager } from 'typeorm';
 import type { ReportsRepositoryPort } from '../../application/ports/reports-repository.port';
 import type {
   ReportAggregatePayload,
@@ -20,7 +20,12 @@ export class ReportsTypeOrmRepository implements ReportsRepositoryPort {
 
   async create(payload: Record<string, unknown>) {
     const repository = this.dataSource.getRepository(ReportEntity);
-    const entity = repository.create(payload);
+    const now = new Date();
+    const entity = repository.create({
+      ...payload,
+      createdAt: now,
+      updatedAt: now,
+    });
     return repository.save(entity);
   }
 
@@ -39,7 +44,12 @@ export class ReportsTypeOrmRepository implements ReportsRepositoryPort {
       return null;
     }
 
-    return repository.save(repository.merge(existing, payload));
+    return repository.save(
+      repository.merge(existing, {
+        ...payload,
+        updatedAt: new Date(),
+      }),
+    );
   }
 
   async delete(id: number) {
@@ -76,18 +86,64 @@ export class ReportsTypeOrmRepository implements ReportsRepositoryPort {
     return { report, basicData, attachments, dynamicValues };
   }
 
+  private async resolveDynamicValues(
+    manager: EntityManager,
+    reportId: number,
+    dynamicValues: Record<string, unknown>[],
+  ) {
+    const fieldsRepo = manager.getRepository(ReportFieldsConfigEntity);
+    const fields = await fieldsRepo.find();
+    const slugToId = new Map(
+      fields
+        .filter((field) => field.slug)
+        .map((field) => [field.slug!, field.id]),
+    );
+
+    return dynamicValues
+      .map((value) => {
+        const fieldSlug = value.fieldSlug as string | undefined;
+        const rawFieldId = value.fieldId as number | string | undefined;
+        let fieldId =
+          typeof rawFieldId === 'number'
+            ? rawFieldId
+            : rawFieldId != null && /^\d+$/.test(String(rawFieldId))
+              ? Number(rawFieldId)
+              : undefined;
+
+        if (fieldSlug && slugToId.has(fieldSlug)) {
+          fieldId = slugToId.get(fieldSlug);
+        }
+
+        if (fieldId == null || value.value == null) {
+          return null;
+        }
+
+        return {
+          fieldId,
+          value: String(value.value),
+          reportId,
+        };
+      })
+      .filter((value): value is { fieldId: number; value: string; reportId: number } =>
+        value != null,
+      );
+  }
+
   async upsertAggregateByReportId(id: number, payload: ReportAggregatePayload) {
     return this.dataSource.transaction(async (manager) => {
       const reportRepo = manager.getRepository(ReportEntity);
       const basicDataRepo = manager.getRepository(BasicDataEntity);
       const attachmentRepo = manager.getRepository(ReportAttachmentEntity);
       const dynamicValuesRepo = manager.getRepository(ReportDynamicValueEntity);
+      const now = new Date();
 
       const existingReport = await reportRepo.findOneBy({ id });
       const report = await reportRepo.save(
         reportRepo.merge(existingReport ?? reportRepo.create({ id }), {
           ...payload.report,
           id,
+          updatedAt: now,
+          createdAt: existingReport?.createdAt ?? now,
         }),
       );
 
@@ -102,6 +158,8 @@ export class ReportsTypeOrmRepository implements ReportsRepositoryPort {
             {
               ...(payload.basicData ?? {}),
               reportId: id,
+              updatedAt: now,
+              createdAt: existingBasicData?.createdAt ?? now,
             },
           ),
         );
@@ -117,6 +175,8 @@ export class ReportsTypeOrmRepository implements ReportsRepositoryPort {
               attachmentRepo.create({
                 ...attachment,
                 reportId: id,
+                createdAt: now,
+                updatedAt: now,
               }),
             ),
           );
@@ -125,12 +185,18 @@ export class ReportsTypeOrmRepository implements ReportsRepositoryPort {
 
       if (payload.dynamicValues) {
         await dynamicValuesRepo.delete({ reportId: id });
-        if (payload.dynamicValues.length > 0) {
+        const resolvedValues = await this.resolveDynamicValues(
+          manager,
+          id,
+          payload.dynamicValues,
+        );
+        if (resolvedValues.length > 0) {
           await dynamicValuesRepo.save(
-            payload.dynamicValues.map((value) =>
+            resolvedValues.map((value) =>
               dynamicValuesRepo.create({
                 ...value,
-                reportId: id,
+                createdAt: now,
+                updatedAt: now,
               }),
             ),
           );
@@ -186,7 +252,12 @@ export class ReportsTypeOrmRepository implements ReportsRepositoryPort {
             .where('d.updated_at >= :pullDate', { pullDate })
             .getMany()
         : dynamicRepo.find(),
-      attachmentsRepo.find(),
+      pullDate
+        ? attachmentsRepo
+            .createQueryBuilder('a')
+            .where('a.updated_at >= :pullDate', { pullDate })
+            .getMany()
+        : attachmentsRepo.find(),
       pullDate
         ? fieldsRepo
             .createQueryBuilder('f')
@@ -195,13 +266,25 @@ export class ReportsTypeOrmRepository implements ReportsRepositoryPort {
         : fieldsRepo.find(),
     ]);
 
+    const fieldSlugById = new Map(
+      reportFieldsConfig
+        .filter((field) => field.slug)
+        .map((field) => [field.id, field.slug]),
+    );
+
     return {
       changes: {
         reports: { created: [], updated: reports, deleted: [] },
         basicData: { created: [], updated: basicData, deleted: [] },
         reportDynamicValues: {
           created: [],
-          updated: reportDynamicValues,
+          updated: reportDynamicValues.map((value) => ({
+            ...value,
+            fieldSlug:
+              value.fieldId != null
+                ? fieldSlugById.get(value.fieldId)
+                : undefined,
+          })),
           deleted: [],
         },
         reportAttachments: {
